@@ -109,6 +109,27 @@ let createUser = (userObj, response, request) => {
     })
     .catch(console.error);
 };
+app.get('/users/:username', (request, response) => {
+  client.query('SELECT * From users WHERE username=$1;',
+    [
+      request.params.username
+    ])
+    .then(results => {
+      if(!results.rows[0].password) {
+        throw new Error('Username does not exist.');
+      } else if (request.query.password === results.rows[0].password) {
+        let user = {
+          user_id: results.rows[0].user_id,
+          username: results.rows[0].username,
+          email: results.rows[0].email
+        };
+        response.send(user);
+      } else {
+        throw new Error('Password does not match.');
+      }
+    })
+    .catch(console.error);
+});
 
 app.get('/users', (request, response) => {
   client.query('SELECT * FROM users')
